@@ -55,16 +55,16 @@ export class LogseqTaskRepository implements ITaskRepository {
       return null;
     }
 
-    const blockId = this.readString(pulled, "uuid") ?? this.readString(pulled, "block/uuid");
+    const blockId = this.readTextValue(pulled, "uuid") ?? this.readTextValue(pulled, "block/uuid");
     const marker =
-      this.readString(pulled, "marker") ??
-      this.readString(pulled, "block/marker") ??
-      this.readString(pulled, "logseq.task/status");
+      this.readTextValue(pulled, "marker") ??
+      this.readTextValue(pulled, "block/marker") ??
+      this.readTextValue(pulled, "logseq.task/status");
     const title =
-      this.readString(pulled, "title") ??
-      this.readString(pulled, "block/title") ??
-      this.readString(pulled, "content") ??
-      this.readString(pulled, "block/content") ??
+      this.readTextValue(pulled, "title") ??
+      this.readTextValue(pulled, "block/title") ??
+      this.readTextValue(pulled, "content") ??
+      this.readTextValue(pulled, "block/content") ??
       "";
 
     if (!blockId || !marker) {
@@ -80,7 +80,7 @@ export class LogseqTaskRepository implements ITaskRepository {
       this.readDateLike(pulled, "deadline") ??
       this.readDateLike(pulled, "block/deadline") ??
       this.readDateLike(pulled, "logseq.task/deadline");
-    const remoteEventId = this.readString(properties, REMOTE_EVENT_ID_PROPERTY);
+    const remoteEventId = this.readTextValue(properties, REMOTE_EVENT_ID_PROPERTY);
 
     return {
       blockId,
@@ -112,7 +112,7 @@ export class LogseqTaskRepository implements ITaskRepository {
     return null;
   }
 
-  private readString(source: Record<string, unknown> | undefined, key: string): string | undefined {
+  private readTextValue(source: Record<string, unknown> | undefined, key: string): string | undefined {
     if (!source) {
       return undefined;
     }
@@ -120,6 +120,22 @@ export class LogseqTaskRepository implements ITaskRepository {
     const value = source[key];
     if (typeof value === "string") {
       return value;
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+    if (value && typeof value === "object") {
+      const nested = value as Record<string, unknown>;
+      const candidates = ["name", "title", "ident", "value", "uuid", "fullTitle"];
+      for (const candidate of candidates) {
+        const nestedValue = nested[candidate];
+        if (typeof nestedValue === "string") {
+          return nestedValue;
+        }
+        if (typeof nestedValue === "number" || typeof nestedValue === "boolean") {
+          return String(nestedValue);
+        }
+      }
     }
 
     return undefined;
@@ -136,6 +152,19 @@ export class LogseqTaskRepository implements ITaskRepository {
     }
     if (typeof value === "string") {
       return value;
+    }
+    if (value && typeof value === "object") {
+      const nested = value as Record<string, unknown>;
+      const candidates = ["value", "date", "datetime", "ident"];
+      for (const candidate of candidates) {
+        const nestedValue = nested[candidate];
+        if (typeof nestedValue === "string") {
+          return nestedValue;
+        }
+        if (typeof nestedValue === "number") {
+          return String(nestedValue);
+        }
+      }
     }
 
     return undefined;

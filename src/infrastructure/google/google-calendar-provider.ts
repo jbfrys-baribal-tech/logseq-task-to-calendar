@@ -125,15 +125,29 @@ export class GoogleCalendarProvider implements ICalendarProvider {
   }
 
   private toGoogleEventPayload(eventData: SyncEvent): Record<string, unknown> {
+    const allDay = this.isDateOnly(eventData.startDate) && this.isDateOnly(eventData.endDate);
+
     return {
       summary: eventData.title,
       description: `Synced from Logseq block ${eventData.logseqBlockId}`,
-      start: {
-        dateTime: eventData.startDate,
-      },
-      end: {
-        dateTime: eventData.endDate,
-      },
+      start: allDay
+        ? {
+            date: eventData.startDate,
+          }
+        : {
+            dateTime: eventData.startDate,
+          },
+      end: allDay
+        ? {
+            date: eventData.endDate,
+          }
+        : {
+            dateTime: eventData.endDate,
+          },
     };
+  }
+
+  private isDateOnly(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
   }
 }

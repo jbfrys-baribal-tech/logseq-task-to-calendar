@@ -61,7 +61,9 @@ export class TaskNormalizer {
   }
 
   private normalizeStatus(status: string): string {
-    return status.trim().toUpperCase();
+    const trimmed = status.trim();
+    const tail = trimmed.split(/[./]/).pop() ?? trimmed;
+    return tail.replace(/^:/, "").trim().toUpperCase();
   }
 
   private readDateValue(task: TaskRecord, key: "scheduledAt" | "deadlineAt"): string | undefined {
@@ -92,10 +94,19 @@ export class TaskNormalizer {
       const year = Number(normalized.slice(0, 4));
       const month = Number(normalized.slice(4, 6)) - 1;
       const day = Number(normalized.slice(6, 8));
-      return new Date(Date.UTC(year, month, day)).toISOString();
+      return this.formatDateOnly(new Date(Date.UTC(year, month, day)));
     }
 
-    return new Date(normalized).toISOString();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      return normalized;
+    }
+
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) {
+      return normalized;
+    }
+
+    return date.toISOString();
   }
 
   private addDays(value: string, days: number): string {
@@ -104,18 +115,31 @@ export class TaskNormalizer {
       const year = Number(normalized.slice(0, 4));
       const month = Number(normalized.slice(4, 6)) - 1;
       const day = Number(normalized.slice(6, 8));
-      return this.formatYYYYMMDD(new Date(Date.UTC(year, month, day + days)));
+      return this.formatDateOnly(new Date(Date.UTC(year, month, day + days)));
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+      const date = new Date(`${normalized}T00:00:00Z`);
+      if (!Number.isNaN(date.getTime())) {
+        date.setUTCDate(date.getUTCDate() + days);
+        return this.formatDateOnly(date);
+      }
+      return normalized;
     }
 
     const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) {
+      return normalized;
+    }
+
     date.setUTCDate(date.getUTCDate() + days);
     return date.toISOString();
   }
 
-  private formatYYYYMMDD(date: Date): string {
+  private formatDateOnly(date: Date): string {
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, "0");
     const day = String(date.getUTCDate()).padStart(2, "0");
-    return `${year}${month}${day}`;
+    return `${year}-${month}-${day}`;
   }
 }
