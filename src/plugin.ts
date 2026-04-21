@@ -1,7 +1,7 @@
 import { logError, logInfo } from "./shared/logger";
 import {
   getPluginSettings,
-  refreshSettingsSchema,
+  registerSettingsSchema,
   setPluginSettingsSnapshotFromLogseq,
 } from "./settings";
 import { runSync } from "./application/sync/run-sync";
@@ -19,11 +19,10 @@ declare global {
 export async function bootstrapPlugin(): Promise<void> {
   try {
     setPluginSettingsSnapshotFromLogseq((logseq.settings ?? {}) as Record<string, unknown>);
-    refreshSettingsSchema();
+    registerSettingsSchema();
 
     logseq.onSettingsChanged((nextSettings) => {
       setPluginSettingsSnapshotFromLogseq((nextSettings ?? {}) as Record<string, unknown>);
-      refreshSettingsSchema(getPluginSettings().provider);
     });
 
     window.__logseqTaskToCalendarSync = async () => {
