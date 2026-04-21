@@ -1,5 +1,5 @@
 import { logError, logInfo } from "./shared/logger";
-import { getPluginSettings, registerSettingsSchema } from "./settings";
+import { getPluginSettings, refreshSettingsSchema } from "./settings";
 import { runSync } from "./application/sync/run-sync";
 import { PLUGIN_NAME } from "./shared/constants";
 
@@ -14,7 +14,12 @@ declare global {
  */
 export async function bootstrapPlugin(): Promise<void> {
   try {
-    registerSettingsSchema();
+    refreshSettingsSchema();
+
+    logseq.onSettingsChanged(() => {
+      refreshSettingsSchema();
+    });
+
     window.__logseqTaskToCalendarSync = async () => {
       await runSync(getPluginSettings());
     };
@@ -32,7 +37,7 @@ export async function bootstrapPlugin(): Promise<void> {
     logseq.App.registerUIItem("toolbar", {
       key: "logseq-task-to-calendar-toolbar",
       template:
-        '<a class="button" title="Sync tasks to calendar" onclick="window.__logseqTaskToCalendarSync?.()">⟳</a>',
+        '<a class="button" title="Sync tasks to calendar" style="font-size:30%;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:1.4em;height:1.4em;" onclick="window.__logseqTaskToCalendarSync?.()">⟳</a>',
     });
 
     logInfo("Plugin initialized");
