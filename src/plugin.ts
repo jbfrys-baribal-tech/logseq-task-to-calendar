@@ -1,5 +1,9 @@
 import { logError, logInfo } from "./shared/logger";
-import { getPluginSettings, refreshSettingsSchema } from "./settings";
+import {
+  getPluginSettings,
+  refreshSettingsSchema,
+  setPluginSettingsSnapshotFromLogseq,
+} from "./settings";
 import { runSync } from "./application/sync/run-sync";
 import { PLUGIN_NAME } from "./shared/constants";
 
@@ -14,10 +18,12 @@ declare global {
  */
 export async function bootstrapPlugin(): Promise<void> {
   try {
+    setPluginSettingsSnapshotFromLogseq((logseq.settings ?? {}) as Record<string, unknown>);
     refreshSettingsSchema();
 
-    logseq.onSettingsChanged(() => {
-      refreshSettingsSchema();
+    logseq.onSettingsChanged((nextSettings) => {
+      setPluginSettingsSnapshotFromLogseq((nextSettings ?? {}) as Record<string, unknown>);
+      refreshSettingsSchema(getPluginSettings().provider);
     });
 
     window.__logseqTaskToCalendarSync = async () => {
@@ -37,7 +43,7 @@ export async function bootstrapPlugin(): Promise<void> {
     logseq.App.registerUIItem("toolbar", {
       key: "logseq-task-to-calendar-toolbar",
       template:
-        '<a class="button" title="Sync tasks to calendar" style="font-size:30%;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:1.4em;height:1.4em;" onclick="window.__logseqTaskToCalendarSync?.()">⟳</a>',
+        '<a class="button" title="Sync tasks to calendar" style="display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;width:18px;height:18px;line-height:0;padding:0;margin:0 0 0 2px;" onclick="window.__logseqTaskToCalendarSync?.()"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false" style="display:block;flex:0 0 auto;"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>',
     });
 
     logInfo("Plugin initialized");
