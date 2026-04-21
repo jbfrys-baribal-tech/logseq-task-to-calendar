@@ -1,0 +1,26 @@
+{
+  "name": "logseq-task-to-calendar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Logseq DB task synchronization plugin for calendar providers.",
+  "type": "module",
+  "main": "dist/index.js",
+  "logseq": {
+    "id": "logseq-task-to-calendar",
+    "title": "Logseq Task to Calendar",
+    "icon": "icon.svg"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@logseq/libs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3"
+  }
+}

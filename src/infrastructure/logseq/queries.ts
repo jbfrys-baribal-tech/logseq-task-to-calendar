@@ -4,11 +4,9 @@
  */
 export const FIND_SYNCABLE_TASKS_QUERY = `
 [:find
-  (pull ?b [:block/uuid :block/marker :block/content :block/scheduled :block/deadline :block/properties])
+  (pull ?b [:block/uuid :block/title :block/content :block/marker :block/scheduled :block/deadline :block/properties :logseq.task/status :logseq.task/scheduled :logseq.task/deadline])
  :where
-  [?b :block/marker ?marker]
-  [(contains? #{"TODO" "DOING" "NOW" "LATER" "WAITING" "WAIT" "DONE" "CANCELED"} ?marker)]
-  (or
-    [?b :block/scheduled ?scheduled]
-    [?b :block/deadline ?deadline])
+  (or-join [?b]
+    [?b :block/marker ?marker]
+    [?b :logseq.task/status ?marker])
 ]`;

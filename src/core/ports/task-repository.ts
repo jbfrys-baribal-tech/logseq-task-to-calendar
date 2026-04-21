@@ -10,4 +10,12 @@ export interface ITaskRepository {
    * @returns A promise resolving to the list of sync-eligible tasks.
    */
   findSyncableTasks(): Promise<TaskRecord[]>;
+
+  /**
+   * Persists the remote calendar event identifier on the originating Logseq block.
+   *
+   * @param blockId - The Logseq block UUID.
+   * @param remoteEventId - The remote calendar event identifier.
+   */
+  persistRemoteEventId(blockId: string, remoteEventId: string): Promise<void>;
 }

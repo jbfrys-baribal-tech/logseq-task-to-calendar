@@ -32,4 +32,9 @@ export interface TaskRecord {
    * Existing remote calendar event identifier, if already persisted on the block.
    */
   remoteEventId?: string;
+
+  /**
+   * Optional raw DB payload attached to the record for provider-independent normalization.
+   */
+  raw?: Record<string, unknown>;
 }
