@@ -18,4 +18,11 @@ export interface ITaskRepository {
    * @param remoteEventId - The remote calendar event identifier.
    */
   persistRemoteEventId(blockId: string, remoteEventId: string): Promise<void>;
+
+  /**
+   * Removes the remote calendar event identifier from the originating Logseq block.
+   *
+   * @param blockId - The Logseq block UUID.
+   */
+  removeRemoteEventId(blockId: string): Promise<void>;
 }

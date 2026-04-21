@@ -6,6 +6,7 @@ import type { SyncEvent } from "../src/core/models/sync-event";
 function makeSettings(): PluginSettings {
   return {
     provider: "google",
+    completedTaskAction: "update",
     googleClientId: "client-id",
     googleClientSecret: "client-secret",
     googleRefreshToken: "refresh-token",

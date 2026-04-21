@@ -126,10 +126,14 @@ export class GoogleCalendarProvider implements ICalendarProvider {
 
   private toGoogleEventPayload(eventData: SyncEvent): Record<string, unknown> {
     const allDay = this.isDateOnly(eventData.startDate) && this.isDateOnly(eventData.endDate);
+    const descriptionLines = [
+      `Synced from Logseq block ${eventData.logseqBlockId}`,
+      `Status: ${eventData.status}`,
+    ];
 
     return {
       summary: eventData.title,
-      description: `Synced from Logseq block ${eventData.logseqBlockId}`,
+      description: descriptionLines.join("\n"),
       start: allDay
         ? {
             date: eventData.startDate,

@@ -49,6 +49,13 @@ export class LogseqTaskRepository implements ITaskRepository {
     });
   }
 
+  /**
+   * Removes the remote calendar event identifier from the originating block.
+   */
+  async removeRemoteEventId(blockId: string): Promise<void> {
+    await logseq.Editor.removeBlockProperty(blockId, REMOTE_EVENT_ID_PROPERTY);
+  }
+
   private extractPulledTask(row: unknown): TaskRecord | null {
     const pulled = this.unwrapPulledTask(row);
     if (!pulled) {

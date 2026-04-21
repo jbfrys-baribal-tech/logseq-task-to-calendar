@@ -1,5 +1,5 @@
 import type { SettingSchemaDesc } from "@logseq/libs/dist/LSPlugin";
-import type { CalendarProviderType } from "./shared/types";
+import type { CalendarProviderType, CompletedTaskAction } from "./shared/types";
 import { PLUGIN_SETTINGS_KEY } from "./shared/constants";
 
 /**
@@ -7,6 +7,7 @@ import { PLUGIN_SETTINGS_KEY } from "./shared/constants";
  */
 export interface PluginSettings {
   provider: CalendarProviderType;
+  completedTaskAction: CompletedTaskAction;
   googleClientId: string;
   googleClientSecret: string;
   googleRefreshToken: string;
@@ -24,6 +25,7 @@ export interface PluginSettings {
  */
 export const defaultSettings: PluginSettings = {
   provider: "google",
+  completedTaskAction: "update",
   googleClientId: "",
   googleClientSecret: "",
   googleRefreshToken: "",
@@ -44,6 +46,7 @@ let currentSettings: PluginSettings = defaultSettings;
 function pickPluginSettings(settings: Record<string, unknown>): Partial<PluginSettings> {
   return {
     provider: settings.provider as CalendarProviderType | undefined,
+    completedTaskAction: settings.completedTaskAction as CompletedTaskAction | undefined,
     googleClientId: settings.googleClientId as string | undefined,
     googleClientSecret: settings.googleClientSecret as string | undefined,
     googleRefreshToken: settings.googleRefreshToken as string | undefined,
@@ -81,6 +84,15 @@ export const settingsSchema: SettingSchemaDesc[] = [
     title: "Default event duration (minutes)",
     description: "Fallback duration used when only one task date is available.",
     default: defaultSettings.defaultEventDurationMinutes,
+  },
+  {
+    key: "completedTaskAction",
+    type: "enum",
+    title: "Completed task action",
+    description: "Choose whether completed tasks should update the calendar event or delete it.",
+    default: defaultSettings.completedTaskAction,
+    enumChoices: ["update", "delete"],
+    enumPicker: "select",
   },
   {
     key: "google",

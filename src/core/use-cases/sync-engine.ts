@@ -2,6 +2,7 @@ import type { ICalendarProvider } from "../ports/calendar-provider";
 import type { ITaskRepository } from "../ports/task-repository";
 import { TaskNormalizer } from "../services/task-normalizer";
 import { logError, logInfo } from "../../shared/logger";
+import type { CompletedTaskAction } from "../../shared/types";
 
 /**
  * Orchestrates the synchronization between Logseq and the remote calendar provider.
@@ -11,6 +12,7 @@ export class SyncEngine {
     private readonly taskRepository: ITaskRepository,
     private readonly calendarProvider: ICalendarProvider,
     private readonly taskNormalizer: TaskNormalizer = new TaskNormalizer(),
+    private readonly completedTaskAction: CompletedTaskAction = "update",
   ) {}
 
   /**
@@ -28,6 +30,7 @@ export class SyncEngine {
 
       let created = 0;
       let updated = 0;
+      let deleted = 0;
       let skipped = 0;
 
       for (const task of tasks) {
@@ -38,10 +41,19 @@ export class SyncEngine {
         }
 
         try {
+          if (event.status === "DONE" && !event.remoteEventId) {
+            skipped += 1;
+            continue;
+          }
+
           if (!event.remoteEventId) {
             const remoteEventId = await this.calendarProvider.createEvent(event);
             await this.taskRepository.persistRemoteEventId(task.blockId, remoteEventId);
             created += 1;
+          } else if (event.status === "DONE" && this.completedTaskAction === "delete") {
+            await this.calendarProvider.deleteEvent(event.remoteEventId);
+            await this.taskRepository.removeRemoteEventId(task.blockId);
+            deleted += 1;
           } else {
             await this.calendarProvider.updateEvent(event.remoteEventId, event);
             updated += 1;
@@ -52,7 +64,7 @@ export class SyncEngine {
       }
 
       await logseq.UI.showMsg(
-        `Sync complete: ${created} created, ${updated} updated, ${skipped} skipped.`,
+        `Sync complete: ${created} created, ${updated} updated, ${deleted} deleted, ${skipped} skipped.`,
         "success",
       );
     } catch (error) {

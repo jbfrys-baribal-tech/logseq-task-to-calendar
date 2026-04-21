@@ -1,4 +1,5 @@
 import { SyncEngine } from "../../core/use-cases/sync-engine";
+import { TaskNormalizer } from "../../core/services/task-normalizer";
 import { LogseqTaskRepository } from "../../infrastructure/logseq/db-task-repository";
 import { GoogleCalendarProvider } from "../../infrastructure/google/google-calendar-provider";
 import type { PluginSettings } from "../../settings";
@@ -26,7 +27,12 @@ export async function runSync(settings: PluginSettings): Promise<void> {
     const taskRepository = new LogseqTaskRepository();
     const calendarProvider = new GoogleCalendarProvider(settings);
 
-    const engine = new SyncEngine(taskRepository, calendarProvider);
+    const engine = new SyncEngine(
+      taskRepository,
+      calendarProvider,
+      new TaskNormalizer(),
+      settings.completedTaskAction,
+    );
 
     await engine.run();
   } catch (error) {
