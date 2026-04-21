@@ -13,6 +13,6 @@
     "resolveJsonModule": true,
     "types": ["node", "@logseq/libs"]
   },
-  "include": ["src", "vite.config.ts"],
+  "include": ["src", "tests", "vite.config.ts"],
   "exclude": ["dist", "node_modules"]
 }
